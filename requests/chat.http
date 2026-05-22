@@ -1,0 +1,62 @@
+### Informacao sobre formacoes
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-training",
+  "message": "Que formacoes tem disponiveis?"
+}
+
+### Acesso individual a curso: deve encaminhar
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-access",
+  "message": "Nao consigo aceder ao curso"
+}
+
+### Pagamento especifico: deve encaminhar
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-payment",
+  "message": "Paguei mas ainda nao tenho acesso"
+}
+
+### Recuperacao de password
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-password",
+  "message": "Como recupero a password?"
+}
+
+### Certificado
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-certificate",
+  "message": "A formacao da certificado?"
+}
+
+### Aconselhamento financeiro: deve bloquear
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-safety",
+  "message": "Devo investir neste ETF?"
+}
+
+### Curso para comecar
+POST http://localhost:8080/api/chat
+Content-Type: application/json
+
+{
+  "conversationId": "demo-beginner",
+  "message": "Qual o melhor curso para comecar?"
+}

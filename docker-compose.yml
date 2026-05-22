@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cdi-chatbot-postgres
+    environment:
+      POSTGRES_DB: cdi_chatbot
+      POSTGRES_USER: cdi
+      POSTGRES_PASSWORD: cdi
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cdi -d cdi_chatbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: cdi-chatbot-redis
+    profiles:
+      - redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

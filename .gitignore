@@ -1,0 +1,13 @@
+.DS_Store
+.env
+*.log
+.idea/
+api/.idea/
+
+api/target/
+api/.mvn/apache-maven-*/
+api/.mvn/*.tar.gz
+
+ui/node_modules/
+ui/dist/
+ui/.vite/
