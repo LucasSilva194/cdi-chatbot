@@ -1,7 +1,7 @@
 <template>
-  <AdminTestPage />
+  <ChatWidget title="Genius" />
 </template>
 
 <script setup lang="ts">
-import AdminTestPage from './pages/AdminTestPage.vue';
+import ChatWidget from './components/ChatWidget.vue';
 </script>

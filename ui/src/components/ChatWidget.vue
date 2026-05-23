@@ -1,64 +1,112 @@
 <template>
-  <section class="chat-widget" aria-label="Chat de suporte">
-    <header class="chat-widget__header">
-      <div>
-        <p class="chat-widget__eyebrow">Ciências do Investimento</p>
-        <h1>{{ title }}</h1>
+  <div class="chat-widget-shell" :class="{ 'chat-widget-shell--floating': floating, 'chat-widget-shell--inline': !floating }">
+    <button
+      v-if="floating && !isOpen"
+      class="chat-widget-launcher"
+      type="button"
+      aria-label="Abrir chat de suporte"
+      title="Abrir chat de suporte"
+      @click="open"
+    >
+      <img src="/cdi-chatbot-avatar.png" alt="" />
+      <span>Ajuda</span>
+    </button>
+
+    <section v-if="isOpen" class="chat-widget" aria-label="Chat de suporte">
+      <header class="chat-widget__header">
+        <div class="chat-widget__brand">
+          <img src="/cdi-chatbot-avatar.png" alt="" />
+          <div>
+            <p class="chat-widget__eyebrow">Ciências do Investimento</p>
+            <h1>{{ title }}</h1>
+          </div>
+        </div>
+        <div class="chat-widget__header-actions">
+          <div class="chat-widget__status">
+            <span aria-hidden="true"></span>
+            Genius
+          </div>
+          <button
+            v-if="floating"
+            class="chat-widget__icon-button"
+            type="button"
+            aria-label="Minimizar chat"
+            title="Minimizar chat"
+            @click="close"
+          >
+            <Minus :size="18" />
+          </button>
+        </div>
+      </header>
+
+      <div ref="messagesRef" class="chat-widget__messages">
+        <ChatMessage
+          v-for="message in messages"
+          :key="message.id"
+          :message="message"
+          :show-diagnostics="showDiagnostics"
+        />
+        <div v-if="sending" class="chat-widget__typing">
+          <LoaderCircle :size="16" />
+          A pensar na melhor resposta...
+        </div>
       </div>
-      <div class="chat-widget__status">
-        <span aria-hidden="true"></span>
-        FAQ ativo
+
+      <div v-if="lastEscalated" class="chat-widget__escalation">
+        <SupportEscalation />
       </div>
-    </header>
 
-    <div ref="messagesRef" class="chat-widget__messages">
-      <ChatMessage v-for="message in messages" :key="message.id" :message="message" />
-      <div v-if="sending" class="chat-widget__typing">
-        <LoaderCircle :size="16" />
-        A preparar resposta...
+      <div v-if="suggestions.length" class="chat-widget__suggestions" aria-label="Sugestões">
+        <button
+          v-for="suggestion in suggestions"
+          :key="suggestion"
+          type="button"
+          :disabled="sending"
+          @click="sendSuggestion(suggestion)"
+        >
+          {{ suggestion }}
+        </button>
       </div>
-    </div>
 
-    <div v-if="lastEscalated" class="chat-widget__escalation">
-      <SupportEscalation />
-    </div>
-
-    <div v-if="suggestions.length" class="chat-widget__suggestions" aria-label="Sugestões">
-      <button v-for="suggestion in suggestions" :key="suggestion" type="button" @click="setDraft(suggestion)">
-        {{ suggestion }}
-      </button>
-    </div>
-
-    <ChatInput ref="inputRef" v-model="draft" :disabled="sending" @send="sendDraft" />
-  </section>
+      <ChatInput ref="inputRef" v-model="draft" :disabled="sending" @send="sendDraft" />
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
-import { LoaderCircle } from '@lucide/vue';
+import { LoaderCircle, Minus } from '@lucide/vue';
 import ChatInput from './ChatInput.vue';
 import ChatMessage from './ChatMessage.vue';
 import SupportEscalation from './SupportEscalation.vue';
 import { sendChatMessage } from '../services/chatApi';
 import type { ChatMessageItem } from '../types/chat';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   title?: string;
+  initiallyOpen?: boolean;
+  floating?: boolean;
+  showDiagnostics?: boolean;
 }>(), {
-  title: 'Assistente de suporte',
+  title: 'Genius',
+  initiallyOpen: false,
+  floating: true,
+  showDiagnostics: false,
 });
 
+const isOpen = ref(props.initiallyOpen || !props.floating);
 const conversationId = ref(createConversationId());
 const draft = ref('');
 const sending = ref(false);
 const messagesRef = ref<HTMLElement | null>(null);
 const inputRef = ref<InstanceType<typeof ChatInput> | null>(null);
+const MIN_THINKING_TIME_MS = 850;
 
 const messages = ref<ChatMessageItem[]>([
   {
     id: createId(),
     role: 'assistant',
-    content: 'Olá. Posso ajudar com dúvidas gerais sobre formações, pagamentos, subscrições, acesso ao site e recuperação de password.',
+    content: 'Olá, sou o Genius, o assistente da Ciências do Investimento. Diga-me o que precisa e eu tento orientar. Posso ajudar com formações, pagamentos gerais, subscrições, acesso ao site e recuperação de password.',
     intent: 'TRAINING_INFO',
   },
 ]);
@@ -69,10 +117,23 @@ const suggestions = ref<string[]>([
   'A formação dá certificado?',
 ]);
 
-const lastEscalated = computed(() => messages.value.some((message) => message.role === 'assistant' && message.escalated));
+const lastEscalated = computed(() => {
+  const lastAssistantMessage = [...messages.value].reverse().find((message) => message.role === 'assistant');
+
+  return lastAssistantMessage?.escalated === true;
+});
 
 async function sendDraft() {
-  const content = draft.value.trim();
+  await sendMessage(draft.value);
+}
+
+async function sendSuggestion(value: string) {
+  open();
+  await sendMessage(value);
+}
+
+async function sendMessage(value: string) {
+  const content = value.trim();
   if (!content || sending.value) {
     return;
   }
@@ -87,6 +148,7 @@ async function sendDraft() {
 
   sending.value = true;
   await scrollToBottom();
+  const thinkingStartedAt = Date.now();
 
   try {
     const response = await sendChatMessage({
@@ -94,6 +156,7 @@ async function sendDraft() {
       message: content,
     });
 
+    await waitForMinimumThinkingTime(thinkingStartedAt);
     conversationId.value = response.conversationId;
     messages.value.push({
       id: createId(),
@@ -105,6 +168,7 @@ async function sendDraft() {
     });
     suggestions.value = response.suggestions ?? [];
   } catch {
+    await waitForMinimumThinkingTime(thinkingStartedAt);
     messages.value.push({
       id: createId(),
       role: 'assistant',
@@ -120,9 +184,33 @@ async function sendDraft() {
   }
 }
 
+function waitForMinimumThinkingTime(startedAt: number) {
+  const elapsed = Date.now() - startedAt;
+  const remaining = MIN_THINKING_TIME_MS - elapsed;
+
+  if (remaining <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => window.setTimeout(resolve, remaining));
+}
+
 function setDraft(value: string) {
+  open();
   draft.value = value;
-  inputRef.value?.focus();
+  nextTick(() => inputRef.value?.focus());
+}
+
+function open() {
+  isOpen.value = true;
+  nextTick(async () => {
+    await scrollToBottom();
+    inputRef.value?.focus();
+  });
+}
+
+function close() {
+  isOpen.value = false;
 }
 
 async function scrollToBottom() {
@@ -145,5 +233,5 @@ function createId() {
   return Math.random().toString(36).slice(2);
 }
 
-defineExpose({ setDraft, sendDraft });
+defineExpose({ setDraft, sendDraft, open, close });
 </script>

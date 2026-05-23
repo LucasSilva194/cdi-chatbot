@@ -7,6 +7,13 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cdi_chatbot}
     username: ${SPRING_DATASOURCE_USERNAME:cdi}
     password: ${SPRING_DATASOURCE_PASSWORD:cdi}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,3 +28,6 @@ server:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  conversation-state:
+    store: ${APP_CONVERSATION_STATE_STORE:memory}
+    ttl: ${APP_CONVERSATION_STATE_TTL:PT2H}

@@ -7,7 +7,7 @@
       <strong>Encaminhamento para suporte</strong>
       <p>Questões com conta, compra, pagamento ou acesso individual devem ser tratadas por suporte humano.</p>
     </div>
-    <a class="support-escalation__action" href="mailto:suporte@cienciasdoinvestimento.pt">
+    <a class="support-escalation__action" href="mailto:info@cienciasdoinvestimento.com">
       <Mail :size="16" />
       Email
     </a>

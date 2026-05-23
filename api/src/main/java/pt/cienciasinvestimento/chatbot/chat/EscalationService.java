@@ -37,12 +37,12 @@ public class EscalationService {
 
     public KnowledgeBaseAnswer escalationAnswer(Intent intent) {
         String message = """
-                Esta situação pode envolver dados da sua conta, pagamento, compra ou acesso individual.
-                Para proteger os seus dados, vou encaminhar para suporte humano. Por favor contacte suporte@cienciasdoinvestimento.pt e indique o email usado na compra e a formação em causa, sem partilhar dados sensíveis neste chat.
+                Percebo. Como isso pode envolver a sua conta, pagamento, compra ou acesso individual, não devo tentar resolver por aqui.
+                Para proteger os seus dados, o melhor é falar com suporte humano. Contacte info@cienciasdoinvestimento.com e indique o email usado na compra e a formação em causa, sem partilhar dados sensíveis neste chat.
                 """.trim();
 
         if (intent == Intent.HUMAN_SUPPORT) {
-            message = "Claro. Para falar com suporte humano, contacte suporte@cienciasdoinvestimento.pt e descreva a sua questão de forma resumida.";
+            message = "Claro. Para falar com suporte humano, contacte info@cienciasdoinvestimento.com e descreva a sua questão de forma resumida.";
         }
 
         return new KnowledgeBaseAnswer(

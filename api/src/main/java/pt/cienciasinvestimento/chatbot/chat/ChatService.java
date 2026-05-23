@@ -13,19 +13,22 @@ public class ChatService {
     private final SafetyGuardService safetyGuardService;
     private final EscalationService escalationService;
     private final ConversationLogService conversationLogService;
+    private final VideoTroubleshootingService videoTroubleshootingService;
 
     public ChatService(
             IntentClassifierService intentClassifierService,
             KnowledgeBaseService knowledgeBaseService,
             SafetyGuardService safetyGuardService,
             EscalationService escalationService,
-            ConversationLogService conversationLogService
+            ConversationLogService conversationLogService,
+            VideoTroubleshootingService videoTroubleshootingService
     ) {
         this.intentClassifierService = intentClassifierService;
         this.knowledgeBaseService = knowledgeBaseService;
         this.safetyGuardService = safetyGuardService;
         this.escalationService = escalationService;
         this.conversationLogService = conversationLogService;
+        this.videoTroubleshootingService = videoTroubleshootingService;
     }
 
     public ChatResponse reply(ChatRequest request) {
@@ -49,6 +52,21 @@ public class ChatService {
         }
 
         Intent intent = intentClassifierService.classify(request.message());
+        var videoTroubleshootingAnswer = videoTroubleshootingService.handle(conversationId, request.message());
+        if (videoTroubleshootingAnswer.isPresent()) {
+            KnowledgeBaseAnswer answer = videoTroubleshootingAnswer.get();
+            ChatResponse response = new ChatResponse(
+                    conversationId,
+                    intent,
+                    answer.message(),
+                    false,
+                    null,
+                    answer.suggestions()
+            );
+            conversationLogService.log(conversationId, request.message(), response.intent(), response.message(), response.escalated(), response.escalationReason());
+            return response;
+        }
+
         boolean escalated = escalationService.requiresEscalation(intent, request.message());
         KnowledgeBaseAnswer answer = escalated
                 ? escalationService.escalationAnswer(intent)

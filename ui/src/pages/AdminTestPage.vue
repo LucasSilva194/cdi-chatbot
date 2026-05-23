@@ -31,7 +31,13 @@
         </div>
       </aside>
 
-      <ChatWidget ref="chatWidgetRef" title="Painel de teste" />
+      <ChatWidget
+        ref="chatWidgetRef"
+        title="Painel de teste"
+        :floating="false"
+        :initially-open="true"
+        :show-diagnostics="true"
+      />
     </section>
   </main>
 </template>

@@ -9,7 +9,7 @@ public class SafetyGuardService {
 
     private static final String BLOCKED_MESSAGE = """
             Não posso dar aconselhamento financeiro, recomendar investimentos ou indicar compra/venda de ativos.
-            Posso, no entanto, ajudar com informação educativa sobre as formações da Ciências do Investimento ou encaminhar para suporte.
+            Posso, no entanto, ajudar a encontrar conteúdos educativos da Ciências do Investimento para aprender o tema com mais contexto.
             """.trim();
 
     private static final List<String> DIRECT_ADVICE_PHRASES = List.of(

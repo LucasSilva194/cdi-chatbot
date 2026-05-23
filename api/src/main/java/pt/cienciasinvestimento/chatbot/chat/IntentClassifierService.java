@@ -18,6 +18,10 @@ public class IntentClassifierService {
             return Intent.HUMAN_SUPPORT;
         }
 
+        if (looksLikeVideoPlaybackIssue(normalized)) {
+            return Intent.ACCESS_GENERAL;
+        }
+
         if (looksLikePersonalAccountIssue(normalized)) {
             return Intent.PERSONAL_ACCOUNT_ISSUE;
         }
@@ -26,23 +30,87 @@ public class IntentClassifierService {
             return Intent.PASSWORD_RECOVERY;
         }
 
-        if (containsAny(normalized, List.of("certificado", "certificacao", "diploma", "comprovativo"))) {
+        if (containsAny(normalized, List.of("certificado", "certificacao", "diploma", "comprovativo", "dgert"))) {
             return Intent.CERTIFICATION;
         }
 
-        if (containsAny(normalized, List.of("subscricao", "assinatura", "mensalidade", "plano", "renovacao", "cancelar subscricao"))) {
+        if (containsAny(normalized, List.of(
+                "subscricao",
+                "assinatura",
+                "mensalidade",
+                "plano",
+                "renovacao",
+                "cancelar subscricao",
+                "silver member",
+                "gold member",
+                "mastermind",
+                "master mind",
+                "lives",
+                "analise semanal",
+                "atas",
+                "politica monetaria",
+                "economics classes"
+        ))) {
             return Intent.SUBSCRIPTION_GENERAL;
         }
 
-        if (containsAny(normalized, List.of("pagamento", "pagar", "cartao", "mb way", "multibanco", "paypal", "fatura", "recibo", "preco"))) {
+        if (containsAny(normalized, List.of(
+                "pagamento",
+                "pagar",
+                "cartao",
+                "mb way",
+                "multibanco",
+                "paypal",
+                "fatura",
+                "faturacao",
+                "factura",
+                "recibo",
+                "preco",
+                "irs",
+                "iva",
+                "deducao",
+                "deduzir",
+                "despesa de educacao",
+                "despesas de educacao"
+        ))) {
             return Intent.PAYMENT_GENERAL;
         }
 
-        if (containsAny(normalized, List.of("aceder ao site", "entrar no site", "login", "iniciar sessao", "area de cliente", "plataforma"))) {
+        if (containsAny(normalized, List.of(
+                "aceder ao site",
+                "entrar no site",
+                "login",
+                "iniciar sessao",
+                "area de cliente",
+                "plataforma",
+                "acesso imediato",
+                "acesso ao conteudo",
+                "video privado",
+                "videos privados",
+                "youtube",
+                "cookies",
+                "seguimento entre sites",
+                "tracking entre sites"
+        ))) {
             return Intent.ACCESS_GENERAL;
         }
 
-        if (containsAny(normalized, List.of("formacao", "formacoes", "curso", "cursos", "conteudos", "modulos", "aulas", "comecar", "iniciante"))) {
+        if (containsAny(normalized, List.of(
+                "formacao",
+                "formacoes",
+                "curso",
+                "cursos",
+                "conteudo",
+                "conteudos",
+                "modulos",
+                "aulas",
+                "comecar",
+                "iniciante",
+                "trader i",
+                "trader ii",
+                "analise tecnica",
+                "analise fundamental"
+        ))) {
             return Intent.TRAINING_INFO;
         }
 
@@ -80,6 +148,24 @@ public class IntentClassifierService {
         ));
 
         return personalPayment || individualAccess;
+    }
+
+    private boolean looksLikeVideoPlaybackIssue(String normalized) {
+        return containsAny(normalized, List.of("video", "videos", "youtube"))
+                && containsAny(normalized, List.of(
+                "privado",
+                "privados",
+                "nao consigo ver",
+                "nao abre",
+                "bloqueia",
+                "bloqueado",
+                "cookies",
+                "seguimento entre sites",
+                "tracking",
+                "trader i",
+                "mastermind",
+                "master mind"
+        ));
     }
 
     private boolean containsAny(String value, List<String> terms) {
