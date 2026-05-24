@@ -16,7 +16,7 @@ spring:
         enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     open-in-view: false
     properties:
       hibernate:
@@ -31,3 +31,7 @@ app:
   conversation-state:
     store: ${APP_CONVERSATION_STATE_STORE:memory}
     ttl: ${APP_CONVERSATION_STATE_TTL:PT2H}
+  shopify:
+    store-domain: ${SHOPIFY_STORE_DOMAIN:}
+    admin-access-token: ${SHOPIFY_ADMIN_ACCESS_TOKEN:}
+    allowed-admin-api-scopes: ${SHOPIFY_ADMIN_API_SCOPES:read_customers,read_orders,read_products}

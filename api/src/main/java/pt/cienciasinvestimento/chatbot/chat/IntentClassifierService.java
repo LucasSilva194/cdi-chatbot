@@ -26,10 +26,6 @@ public class IntentClassifierService {
             return Intent.PERSONAL_ACCOUNT_ISSUE;
         }
 
-        if (containsAny(normalized, List.of("password", "palavra passe", "recuperar passe", "esqueci", "repor password", "reset password"))) {
-            return Intent.PASSWORD_RECOVERY;
-        }
-
         if (containsAny(normalized, List.of("certificado", "certificacao", "diploma", "comprovativo", "dgert"))) {
             return Intent.CERTIFICATION;
         }
@@ -90,7 +86,15 @@ public class IntentClassifierService {
                 "youtube",
                 "cookies",
                 "seguimento entre sites",
-                "tracking entre sites"
+                "tracking entre sites",
+                "codigo",
+                "codigo de acesso",
+                "codigo por email",
+                "codigo enviado por email",
+                "nao recebi o codigo",
+                "email de login",
+                "login por email",
+                "entrar"
         ))) {
             return Intent.ACCESS_GENERAL;
         }

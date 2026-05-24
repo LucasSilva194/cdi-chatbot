@@ -25,13 +25,13 @@ Content-Type: application/json
   "message": "Paguei mas ainda nao tenho acesso"
 }
 
-### Recuperacao de password
+### Login por codigo enviado por email
 POST http://localhost:8080/api/chat
 Content-Type: application/json
 
 {
-  "conversationId": "demo-password",
-  "message": "Como recupero a password?"
+  "conversationId": "demo-login-code",
+  "message": "Nao recebi o codigo de login"
 }
 
 ### Certificado

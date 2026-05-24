@@ -3,7 +3,7 @@
     <div class="chat-message__avatar" aria-hidden="true">
       <UserRound v-if="message.role === 'user'" :size="18" />
       <ShieldAlert v-else-if="message.intent === 'FINANCIAL_ADVICE_BLOCKED'" :size="18" />
-      <img v-else src="/cdi-chatbot-avatar.png" alt="" />
+      <img v-else :src="avatarUrl" alt="" />
     </div>
 
     <div class="chat-message__body">
@@ -26,6 +26,7 @@ import type { ChatMessageItem } from '../types/chat';
 
 const props = defineProps<{
   message: ChatMessageItem;
+  avatarUrl?: string;
   showDiagnostics?: boolean;
 }>();
 

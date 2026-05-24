@@ -47,7 +47,7 @@ public class EscalationService {
 
         return new KnowledgeBaseAnswer(
                 message,
-                List.of("Como recupero a password?", "Que formações têm disponíveis?", "Voltar ao início")
+                List.of("Não recebi o código", "Que formações têm disponíveis?", "Voltar ao início")
         );
     }
 

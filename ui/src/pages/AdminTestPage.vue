@@ -53,7 +53,7 @@ const prompts = [
   'Que formações têm disponíveis?',
   'Não consigo aceder ao curso',
   'Paguei mas ainda não tenho acesso',
-  'Como recupero a password?',
+  'Não recebi o código',
   'A formação dá certificado?',
   'Devo investir neste ETF?',
   'Qual o melhor curso para começar?',

@@ -8,14 +8,14 @@
       title="Abrir chat de suporte"
       @click="open"
     >
-      <img src="/cdi-chatbot-avatar.png" alt="" />
+      <img :src="avatarUrl" alt="" />
       <span>Ajuda</span>
     </button>
 
     <section v-if="isOpen" class="chat-widget" aria-label="Chat de suporte">
       <header class="chat-widget__header">
         <div class="chat-widget__brand">
-          <img src="/cdi-chatbot-avatar.png" alt="" />
+          <img :src="avatarUrl" alt="" />
           <div>
             <p class="chat-widget__eyebrow">Ciências do Investimento</p>
             <h1>{{ title }}</h1>
@@ -44,6 +44,7 @@
           v-for="message in messages"
           :key="message.id"
           :message="message"
+          :avatar-url="avatarUrl"
           :show-diagnostics="showDiagnostics"
         />
         <div v-if="sending" class="chat-widget__typing">
@@ -79,20 +80,26 @@ import { LoaderCircle, Minus } from '@lucide/vue';
 import ChatInput from './ChatInput.vue';
 import ChatMessage from './ChatMessage.vue';
 import SupportEscalation from './SupportEscalation.vue';
-import { sendChatMessage } from '../services/chatApi';
+import { configureChatApi, getChatApiBaseUrl, sendChatMessage } from '../services/chatApi';
 import type { ChatMessageItem } from '../types/chat';
 
 const props = withDefaults(defineProps<{
   title?: string;
+  apiBaseUrl?: string;
+  avatarUrl?: string;
   initiallyOpen?: boolean;
   floating?: boolean;
   showDiagnostics?: boolean;
 }>(), {
   title: 'Genius',
+  apiBaseUrl: undefined,
+  avatarUrl: '/cdi-chatbot-avatar.png',
   initiallyOpen: false,
   floating: true,
   showDiagnostics: false,
 });
+
+configureChatApi({ apiBaseUrl: props.apiBaseUrl });
 
 const isOpen = ref(props.initiallyOpen || !props.floating);
 const conversationId = ref(createConversationId());
@@ -106,14 +113,14 @@ const messages = ref<ChatMessageItem[]>([
   {
     id: createId(),
     role: 'assistant',
-    content: 'Olá, sou o Genius, o assistente da Ciências do Investimento. Diga-me o que precisa e eu tento orientar. Posso ajudar com formações, pagamentos gerais, subscrições, acesso ao site e recuperação de password.',
+    content: 'Olá, sou o Genius, o assistente da Ciências do Investimento. Diga-me o que precisa e eu tento orientar. Posso ajudar com formações, pagamentos gerais, subscrições, acesso ao site e código de login por email.',
     intent: 'TRAINING_INFO',
   },
 ]);
 
 const suggestions = ref<string[]>([
   'Que formações têm disponíveis?',
-  'Como recupero a password?',
+  'Não recebi o código',
   'A formação dá certificado?',
 ]);
 
@@ -172,7 +179,7 @@ async function sendMessage(value: string) {
     messages.value.push({
       id: createId(),
       role: 'assistant',
-      content: 'Não foi possível contactar a API. Confirme se a API está ativa em http://localhost:8080.',
+      content: `Não foi possível contactar a API. Confirme se a API está ativa em ${getChatApiBaseUrl()}.`,
       intent: 'UNKNOWN',
       escalated: true,
       escalationReason: 'Falha de comunicação com a API.',

@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cdi_chatbot}
+      POSTGRES_USER: ${POSTGRES_USER:-cdi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cdi} -d ${POSTGRES_DB:-cdi_chatbot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+
+  api:
+    image: ${API_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: staging
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cdi_chatbot}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cdi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      APP_CONVERSATION_STATE_STORE: redis
+      APP_CONVERSATION_STATE_TTL: ${APP_CONVERSATION_STATE_TTL:-PT2H}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_SSL_ENABLED: "false"
+      SHOPIFY_STORE_DOMAIN: ${SHOPIFY_STORE_DOMAIN}
+      SHOPIFY_ADMIN_ACCESS_TOKEN: ${SHOPIFY_ADMIN_ACCESS_TOKEN}
+      SHOPIFY_ADMIN_API_SCOPES: ${SHOPIFY_ADMIN_API_SCOPES:-read_customers,read_orders,read_products}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  ui:
+    image: ${UI_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${UI_PORT:-4173}:80"
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -16,8 +16,9 @@ class IntentClassifierServiceTest {
     }
 
     @Test
-    void classifiesPasswordRecovery() {
-        assertThat(service.classify("Como recupero a password?")).isEqualTo(Intent.PASSWORD_RECOVERY);
+    void classifiesLoginCodeAccessQuestions() {
+        assertThat(service.classify("Não recebi o código de login")).isEqualTo(Intent.ACCESS_GENERAL);
+        assertThat(service.classify("Como posso entrar no site?")).isEqualTo(Intent.ACCESS_GENERAL);
     }
 
     @Test

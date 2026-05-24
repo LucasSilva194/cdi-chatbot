@@ -1,9 +1,19 @@
 import type { ChatRequest, ChatResponse } from '../types/chat';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+let apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+
+export function configureChatApi(options: { apiBaseUrl?: string }) {
+  if (options.apiBaseUrl?.trim()) {
+    apiBaseUrl = options.apiBaseUrl.trim().replace(/\/$/, '');
+  }
+}
+
+export function getChatApiBaseUrl() {
+  return apiBaseUrl;
+}
 
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/chat`, {
+  const response = await fetch(`${apiBaseUrl}/api/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

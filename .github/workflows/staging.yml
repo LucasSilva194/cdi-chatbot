@@ -1,0 +1,151 @@
+name: Deploy staging
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/lucassilva194/cdi-chatbot-api
+  UI_IMAGE: ghcr.io/lucassilva194/cdi-chatbot-ui
+
+jobs:
+  validate:
+    name: Validate API and UI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Test API
+        working-directory: api
+        run: ./mvnw test
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm ci
+
+      - name: Build UI
+        working-directory: ui
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL || 'https://staging-api.cienciasdoinvestimento.com' }}
+
+      - name: Build widget
+        working-directory: ui
+        run: npm run build:widget
+        env:
+          VITE_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL || 'https://staging-api.cienciasdoinvestimento.com' }}
+
+  publish:
+    name: Build and publish Docker images
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Package API
+        working-directory: api
+        run: ./mvnw -DskipTests package
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Build UI artifacts
+        working-directory: ui
+        run: |
+          npm ci
+          npm run build
+          npm run build:widget
+        env:
+          VITE_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL || 'https://staging-api.cienciasdoinvestimento.com' }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: api
+          push: true
+          tags: |
+            ${{ env.API_IMAGE }}:staging
+            ${{ env.API_IMAGE }}:${{ github.sha }}
+
+      - name: Build and push UI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ui
+          push: true
+          tags: |
+            ${{ env.UI_IMAGE }}:staging
+            ${{ env.UI_IMAGE }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to staging server
+    runs-on: ubuntu-latest
+    needs: publish
+    if: ${{ vars.STAGING_DEPLOY_ENABLED == 'true' }}
+    environment: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Copy deployment files
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new "${{ vars.STAGING_SSH_USER }}@${{ vars.STAGING_SSH_HOST }}" "mkdir -p '${{ vars.STAGING_DEPLOY_PATH }}'"
+          scp deploy/staging/docker-compose.staging.yml "${{ vars.STAGING_SSH_USER }}@${{ vars.STAGING_SSH_HOST }}:${{ vars.STAGING_DEPLOY_PATH }}/docker-compose.yml"
+
+      - name: Deploy images
+        run: |
+          ssh "${{ vars.STAGING_SSH_USER }}@${{ vars.STAGING_SSH_HOST }}" << 'EOF'
+          set -eu
+          cd "${{ vars.STAGING_DEPLOY_PATH }}"
+          docker login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
+          API_IMAGE="${{ env.API_IMAGE }}:staging" UI_IMAGE="${{ env.UI_IMAGE }}:staging" docker compose pull
+          API_IMAGE="${{ env.API_IMAGE }}:staging" UI_IMAGE="${{ env.UI_IMAGE }}:staging" docker compose up -d
+          EOF

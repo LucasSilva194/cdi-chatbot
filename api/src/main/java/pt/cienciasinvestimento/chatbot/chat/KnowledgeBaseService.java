@@ -51,12 +51,16 @@ public class KnowledgeBaseService {
         if (isPaymentMethodChangeQuestion(normalized)) {
             return new KnowledgeBaseAnswer(
                     "A subscrição é cobrada automaticamente no método de pagamento usado na compra. Se quiser alterar esse método, pode fazê-lo no perfil de cliente, no menu Subscrições. Se houver algum erro concreto com a cobrança, o melhor é falar com suporte.",
-                    List.of("Qual é a data de vencimento da subscrição?", "Falar com suporte", "Como recupero a password?")
+                    List.of("Qual é a data de vencimento da subscrição?", "Falar com suporte", "Não recebi o código")
             );
         }
 
         if (isVideoPlaybackQuestion(normalized)) {
             return videoPlaybackAnswer();
+        }
+
+        if (isLoginCodeQuestion(normalized)) {
+            return loginCodeAnswer();
         }
 
         if (isInvoiceTaxOrIrsQuestion(normalized)) {
@@ -122,12 +126,8 @@ public class KnowledgeBaseService {
                     List.of("Paguei mas ainda não tenho acesso", "Como recebo o comprovativo?", "Quais os métodos de pagamento?")
             );
             case ACCESS_GENERAL -> new KnowledgeBaseAnswer(
-                    "Vamos por partes. Para aceder ao site, entre na área de cliente com o email usado no registo ou na compra. Se não estiver a conseguir entrar, confirme primeiro o email, tente recuperar a password e verifique se está a usar um browser atualizado.",
-                    List.of("O vídeo aparece como privado", "Como recupero a password?", "Falar com suporte")
-            );
-            case PASSWORD_RECOVERY -> new KnowledgeBaseAnswer(
-                    "Sim. Vá à página de login e escolha a opção para recuperar ou repor a password. Depois introduza o email associado à conta e siga as instruções enviadas por email. Se não encontrar a mensagem, vale a pena ver a pasta de spam, promoções ou lixo eletrónico.",
-                    List.of("Não recebi o email", "Continuo sem conseguir entrar", "Falar com suporte")
+                    "Vamos por partes. O acesso ao site é feito por código enviado para o email associado à conta ou à compra. Confirme se está a usar o email correto, veja a caixa de entrada e também spam, promoções ou lixo eletrónico. Se o código não chegar ou não funcionar, contacte info@cienciasdoinvestimento.com.",
+                    List.of("Não recebi o código", "O vídeo aparece como privado", "Falar com suporte")
             );
             case SUBSCRIPTION_GENERAL -> new KnowledgeBaseAnswer(
                     "As subscrições dependem do plano contratado e das condições apresentadas no momento da compra. Para uma dúvida geral, consulte a área de cliente e os termos da subscrição. Se a pergunta for sobre a sua subscrição em concreto, encaminho para suporte para que possam verificar com segurança.",
@@ -140,11 +140,11 @@ public class KnowledgeBaseService {
             );
             case HUMAN_SUPPORT, PERSONAL_ACCOUNT_ISSUE -> new KnowledgeBaseAnswer(
                     "Isto já parece envolver a sua conta, pagamento ou acesso individual. Para proteger os seus dados, o melhor é passar esta situação para suporte humano.",
-                    List.of("Contactar suporte", "Como recupero a password?", "Ver ajuda de acesso")
+                    List.of("Contactar suporte", "Não recebi o código", "Ver ajuda de acesso")
             );
             case UNKNOWN -> new KnowledgeBaseAnswer(
-                    "Não quero inventar uma resposta. Posso ajudar com dúvidas gerais sobre formações, pagamentos, subscrições, acesso ao site e recuperação de password. Se me der um pouco mais de contexto, tento orientar melhor.",
-                    List.of("Que formações têm disponíveis?", "Como recupero a password?", "Falar com suporte")
+                    "Não quero inventar uma resposta. Posso ajudar com dúvidas gerais sobre formações, pagamentos, subscrições, acesso ao site e código de login por email. Se me der um pouco mais de contexto, tento orientar melhor.",
+                    List.of("Que formações têm disponíveis?", "Não recebi o código", "Falar com suporte")
             );
         };
     }
@@ -164,6 +164,13 @@ public class KnowledgeBaseService {
         return new KnowledgeBaseAnswer(
                 "Vamos resolver por passos. A sua subscrição está ativa?",
                 List.of("Sim, está ativa", "Não, não está ativa", "Não sei")
+        );
+    }
+
+    private KnowledgeBaseAnswer loginCodeAnswer() {
+        return new KnowledgeBaseAnswer(
+                "Para entrar, deve pedir o código de acesso na página de login e usar o código enviado para o email associado à conta ou à compra. Se não receber o email, confirme spam, promoções ou lixo eletrónico e verifique se escreveu o email correto. Se continuar sem conseguir entrar, contacte info@cienciasdoinvestimento.com.",
+                List.of("Não recebi o código", "Falar com suporte", "O vídeo aparece como privado")
         );
     }
 
@@ -265,6 +272,18 @@ public class KnowledgeBaseService {
                 "trader i",
                 "mastermind",
                 "master mind"
+        ));
+    }
+
+    private boolean isLoginCodeQuestion(String normalized) {
+        return containsAny(normalized, List.of(
+                "codigo",
+                "codigo de acesso",
+                "codigo por email",
+                "codigo enviado por email",
+                "nao recebi o codigo",
+                "email de login",
+                "login por email"
         ));
     }
 
