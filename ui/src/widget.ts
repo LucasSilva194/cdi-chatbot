@@ -5,6 +5,7 @@ import './styles/main.css';
 export type CDIChatbotWidgetOptions = {
   target?: string | HTMLElement;
   apiBaseUrl?: string;
+  chatMode?: 'api' | 'demo';
   avatarUrl?: string;
   title?: string;
   initiallyOpen?: boolean;
@@ -23,6 +24,7 @@ function mount(options: CDIChatbotWidgetOptions = {}): CDIChatbotWidgetInstance 
   const app = createApp(ChatWidget, {
     title: options.title ?? 'Genius',
     apiBaseUrl: options.apiBaseUrl,
+    chatMode: options.chatMode,
     avatarUrl: options.avatarUrl ?? '/cdi-chatbot-avatar.png',
     initiallyOpen: options.initiallyOpen ?? false,
     floating: options.floating ?? true,
@@ -72,6 +74,7 @@ function readScriptOptions(): CDIChatbotWidgetOptions & { autoMount: boolean } {
     autoMount: dataset.autoMount !== 'false',
     target: dataset.target,
     apiBaseUrl: dataset.apiBaseUrl,
+    chatMode: dataset.chatMode === 'demo' ? 'demo' : undefined,
     avatarUrl: dataset.avatarUrl,
     title: dataset.title,
     initiallyOpen: readBoolean(dataset.initiallyOpen, false),

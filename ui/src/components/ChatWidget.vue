@@ -86,6 +86,7 @@ import type { ChatMessageItem } from '../types/chat';
 const props = withDefaults(defineProps<{
   title?: string;
   apiBaseUrl?: string;
+  chatMode?: string;
   avatarUrl?: string;
   initiallyOpen?: boolean;
   floating?: boolean;
@@ -93,13 +94,14 @@ const props = withDefaults(defineProps<{
 }>(), {
   title: 'Genius',
   apiBaseUrl: undefined,
+  chatMode: undefined,
   avatarUrl: '/cdi-chatbot-avatar.png',
   initiallyOpen: false,
   floating: true,
   showDiagnostics: false,
 });
 
-configureChatApi({ apiBaseUrl: props.apiBaseUrl });
+configureChatApi({ apiBaseUrl: props.apiBaseUrl, chatMode: props.chatMode });
 
 const isOpen = ref(props.initiallyOpen || !props.floating);
 const conversationId = ref(createConversationId());

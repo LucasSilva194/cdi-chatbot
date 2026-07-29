@@ -122,6 +122,49 @@ Para testes internos, o mesmo componente pode ser usado em modo inline com diagn
 <ChatWidget title="Painel de teste" :floating="false" :initially-open="true" :show-diagnostics="true" />
 ```
 
+### Demo estatica para portfolio
+
+A UI tem um modo demo que nao chama a API Java. Nesse modo, as respostas sao simuladas no browser com uma pequena base de conhecimento local. Isto permite publicar uma live demo gratuita na Vercel ou GitHub Pages.
+
+Para correr localmente:
+
+```bash
+cd ui
+npm run dev:demo
+```
+
+Para gerar build de demo:
+
+```bash
+cd ui
+npm run build:demo
+```
+
+Na Vercel:
+
+- Root Directory: `ui`
+- Framework Preset: `Vite`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Environment Variable: `VITE_CHAT_MODE=demo`
+
+Com `VITE_CHAT_MODE=demo`, o widget demonstra:
+
+- informacao sobre formacoes;
+- certificados DGERT;
+- pagamentos, faturas, IVA e IRS;
+- acesso por codigo enviado por email;
+- problemas tecnicos com videos;
+- bloqueio de aconselhamento financeiro;
+- encaminhamento para suporte humano.
+
+Quando existir API alojada, basta trocar para:
+
+```env
+VITE_CHAT_MODE=api
+VITE_API_BASE_URL=https://api.exemplo.com
+```
+
 ### Build do widget embutivel
 
 Para gerar o bundle pensado para ser carregado no site:
@@ -156,6 +199,16 @@ Em staging, use os dominios de staging:
   src="https://staging-widget.cienciasdoinvestimento.com/widget/cdi-chatbot-widget.js"
   data-api-base-url="https://staging-api.cienciasdoinvestimento.com"
   data-avatar-url="https://staging-widget.cienciasdoinvestimento.com/cdi-chatbot-avatar.png"
+  defer
+></script>
+```
+
+Para uma demo embutida sem API:
+
+```html
+<script
+  src="https://demo-widget.exemplo.com/widget/cdi-chatbot-widget.js"
+  data-chat-mode="demo"
   defer
 ></script>
 ```
