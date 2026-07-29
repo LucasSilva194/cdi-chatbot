@@ -146,9 +146,9 @@ Na Vercel:
 - Framework Preset: `Vite`
 - Build Command: `npm run build`
 - Output Directory: `dist`
-- Environment Variable: `VITE_CHAT_MODE=demo`
+- Environment Variable recomendada: `VITE_CHAT_MODE=demo`
 
-Com `VITE_CHAT_MODE=demo`, o widget demonstra:
+Com `VITE_CHAT_MODE=demo`, ou sem `VITE_API_BASE_URL` em build de producao, o widget demonstra:
 
 - informacao sobre formacoes;
 - certificados DGERT;

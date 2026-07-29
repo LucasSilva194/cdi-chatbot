@@ -5,5 +5,9 @@
 <script setup lang="ts">
 import ChatWidget from './components/ChatWidget.vue';
 
-const chatMode = import.meta.env.VITE_CHAT_MODE === 'demo' ? 'demo' : 'api';
+const hasApiBaseUrl = Boolean(import.meta.env.VITE_API_BASE_URL?.trim());
+const chatMode = import.meta.env.VITE_CHAT_MODE === 'demo'
+  || (import.meta.env.VITE_CHAT_MODE !== 'api' && import.meta.env.PROD && !hasApiBaseUrl)
+  ? 'demo'
+  : 'api';
 </script>

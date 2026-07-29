@@ -1,7 +1,9 @@
 import type { ChatRequest, ChatResponse } from '../types/chat';
 
-let apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
-let chatMode = import.meta.env.VITE_CHAT_MODE === 'demo' ? 'demo' : 'api';
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
+let apiBaseUrl = configuredApiBaseUrl || 'http://localhost:8080';
+let chatMode = resolveInitialChatMode();
 
 export function configureChatApi(options: { apiBaseUrl?: string; chatMode?: string }) {
   if (options.apiBaseUrl?.trim()) {
@@ -40,4 +42,16 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
   }
 
   return response.json() as Promise<ChatResponse>;
+}
+
+function resolveInitialChatMode() {
+  if (import.meta.env.VITE_CHAT_MODE === 'demo') {
+    return 'demo';
+  }
+
+  if (import.meta.env.VITE_CHAT_MODE === 'api') {
+    return 'api';
+  }
+
+  return import.meta.env.PROD && !configuredApiBaseUrl ? 'demo' : 'api';
 }
